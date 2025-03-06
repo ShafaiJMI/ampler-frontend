@@ -4,5 +4,13 @@
 
 body {
     @apply font-nunito;
-    background-color:#f8f9fa;
+    @apply bg-gradient-to-tr from-indigo-200 to-red-100 min-h-screen;
+  }
+  .fullscreen-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 1.5rem;
+    color: #666;
   }

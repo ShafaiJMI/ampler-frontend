@@ -1,5 +1,7 @@
 // GenerateInvoicePage.js
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { TrashIcon, Pencil1Icon } from "@radix-ui/react-icons"
 import axiosInstance from '../utils/axiosInstance';
 
 const SearchInvoicePage = () => {
@@ -47,6 +49,22 @@ const SearchInvoicePage = () => {
         fetchData(); // Call the function to fetch data
       }, []);
 
+      const navigate = useNavigate();
+      const handleView = (inv) => {
+        navigate(`/view/invoice/${inv}/`);
+      };
+  
+      const handleEdit = (inv) => {
+        navigate(`/edit/invoice/${inv}/`);
+      };
+
+      const Actions = ({invoiceNumber}) => (
+        <div className='flex flex-row gap-4 justify-center'>
+          <button className="bg-gray-100 p-2 rounded-full" onClick={handleView.bind(null,invoiceNumber)}><TrashIcon className='text-blue-600' /></button>
+          <button className="bg-gray-100 p-2 rounded-full" onClick={handleEdit.bind(null,invoiceNumber)}><Pencil1Icon className='text-red-600' /></button>
+        </div>
+      )
+
       const DataList = () => {
         if (loading) {
             return <div>Loading...</div>;
@@ -56,62 +74,71 @@ const SearchInvoicePage = () => {
             }
         return (
             data.map((item) => (
-               
-                    <tr key={item.id} className="even:bg-white">
-                      <td className="border border-gray-300 px-4 py-4 text-sm font-medium text-gray-700 capitalize">
-                      {item.invoice_number}
+                    <tr key={item.id} className="even:bg-white h-14">
+                      <td className="border-gray-200 px-4 py-4 text-sm font-medium text-blue-700 capitalize hover:underline">
+                      <Link to={`/view/invoice/${item.invoice_number}/`}>{item.invoice_number}</Link>
                       </td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm text-gray-700">
-                      {item.seller_name}
+                      <td className="border-gray-200 px-4 py-2 text-sm text-gray-700">
+                      {item.seller_name || '--empty--'}
                       </td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm text-gray-700">
-                      {item.buyer_name}
+                      <td className="border-gray-200 px-4 py-2 text-sm text-gray-700 hidden md:table-cell">
+                      {item.buyer_name || '--empty--'}
                       </td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm text-gray-700">
-                      {item.total_landed_cost}
+                      <td className="border-gray-200 px-4 py-2 text-sm text-gray-700 hidden md:table-cell">
+                      {item.report_date || '--empty--'}
                       </td>
-                      <td className="border border-gray-300 px-4 py-2 text-sm text-gray-700">
-                      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                      <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
-                      <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                      </svg>
+                      <td className="border-gray-200 px-4 py-2 text-sm text-gray-700 hidden md:table-cell">
+                      {item.landed_cost || '0.00'}
+                      </td>
+                      <td className="border-gray-200 px-4 py-2 text-sm text-gray-700 hidden md:table-cell">
+                        <div className='bg-yellow-100 text-yellow-600 rounded-s-full rounded-e-full p-1 text-center'><a>Draft</a></div>
+                      
+                      </td>
+                      <td className="border-gray-200 px-4 py-2 text-sm text-gray-700">
+                        <Actions invoiceNumber={item.invoice_number} /> 
                       </td>
                     </tr>
-            
                 ))
             )
       };
     return (
         <section className='container mx-auto p-4'>
-            <div className='bg-white shadow-md rounded-md'>
+        <div className='backdrop-blur-md bg-white/60 shadow-md rounded-3xl'>
         <form className='grid grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-6 p-6' onSubmit={handleSubmit}>
-            <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm" type="text" name="invoice_number" value={invoice.invoice_number} onChange={handleChange} placeholder="Invoice Number" />
-            <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm" type="text" name="customer_name" value={invoice.customer_name} onChange={handleChange} placeholder="Customer Name" />
-            <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm" type="date" name="date" value={invoice.date} onChange={handleChange} />
-            <input className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm" type="number" name="total_amount" value={invoice.total_amount} onChange={handleChange} placeholder="Total Amount" />
-            <button className='py-2 bg-indigo-600 hover:bg-indigo-700 text-white' type="submit">Search Invoice</button>
+            <input className="mt-1 block w-full border border-gray-200 rounded-md shadow-sm" type="text" name="invoice_number" value={invoice.invoice_number} onChange={handleChange} placeholder="Invoice Number" />
+            <input className="mt-1 block w-full border border-gray-200 rounded-md shadow-sm" type="text" name="customer_name" value={invoice.customer_name} onChange={handleChange} placeholder="Party Name" />
+            <input className="mt-1 block w-full border border-gray-200 rounded-md shadow-sm" type="date" name="date" value={invoice.date} onChange={handleChange} />
+            <input className="mt-1 block w-full border border-gray-200 rounded-md shadow-sm" type="number" name="total_amount" value={invoice.total_amount} onChange={handleChange} placeholder="Search by Amount" />
+            <button className='py-2 bg-indigo-600 rounded-md hover:bg-indigo-700 text-white' type="submit">Search Invoice</button>
         </form>
         </div>
         <div className='mt-4'>
             <div className="">
-      <div className="overflow-x-auto shadow-md">
-        <table className="min-w-full border-collapse border rounded-md border-gray-300 ">
+      <div className="overflow-x-auto rounded-3xl bg-white p-8 shadow-lg">
+        <h4 className='text-lg font-semibold'>Invoices</h4>
+        <table className="min-w-full mt-4 rounded-md border-gray-200">
           <thead>
-            <tr className="bg-white">
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">
+            <tr className="bg-slate-100 h-20">
+              <th className=" border-gray-200 px-4 py-2 text-left text-md font-semibold text-gray-700">
                 Invoice Number
               </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">
+              <th className="border-gray-200 px-4 py-2 text-left text-md font-semibold text-gray-700">
                 Seller Name
               </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">
+              <th className="border-gray-200 px-4 py-2 text-left text-md font-semibold text-gray-700 hidden md:table-cell">
                 Buyer Name
               </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Total Landed Cost
+              <th className="border-gray-200 px-4 py-2 text-left text-md font-semibold text-gray-700 hidden md:table-cell">
+                Report Date
               </th>
-              <th className="border border-gray-300 px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Action
+              <th className="border-gray-200 px-4 py-2 text-left text-md font-semibold text-gray-700 hidden md:table-cell">
+              Landed Cost
+              </th>
+              <th className="border-gray-200 px-4 py-2 text-left text-md font-semibold text-gray-700 hidden md:table-cell">
+              Status
+              </th>
+              <th className="border-gray-200 px-4 py-2 text-left text-md font-semibold text-gray-700">
+              
               </th>
             </tr>
           </thead>

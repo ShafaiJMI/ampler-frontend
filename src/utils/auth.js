@@ -1,6 +1,7 @@
 // src/utils/auth.js
 import { jwtDecode } from "jwt-decode";
 import axios from 'axios';
+import axiosInstance from "./axiosInstance";
 
 export const setTokens = (accessToken, refreshToken) => {
     localStorage.setItem('access_token', accessToken);
@@ -28,13 +29,14 @@ export const isAccessTokenExpired = (token) => {
 
 export const refreshAccessToken = async () => {
     const refreshToken = getRefreshToken();
+   
+    const auth_url = `${process.env.REACT_APP_API_BASE_URL}auth/token/refresh/`;
     if (!refreshToken) return null;
-
     try {
-        const response = await axios.post('http://localhost:8000/api/auth/token/refresh/', {
+        const response = await axios.post(auth_url, {
             refresh: refreshToken,
         });
-        setTokens(response.data.access, refreshToken);
+        setTokens(response.data.access, response.data.refresh);
         return response.data.access;
     } catch (err) {
         clearTokens(); // Clear tokens if refresh fails
@@ -44,13 +46,23 @@ export const refreshAccessToken = async () => {
 
 export const startTokenRefreshTimer = () => {
     const token = getAccessToken();
-    if (!token) return;
-
+    if (!token || isAccessTokenExpired(token)) {
+        return; // Don't start the timer if the token is invalid
+    }
     const decoded = jwtDecode(token);
     const expirationTime = decoded.exp * 1000 - Date.now() - 5000; // Refresh 5 seconds before expiry
-
-    setTimeout(async () => {
-        await refreshAccessToken();
-        startTokenRefreshTimer(); // Restart timer
-    }, expirationTime);
+    if (expirationTime > 0) {
+        setTimeout(async () => {
+            const newToken = await refreshAccessToken();
+            if (newToken) {
+                startTokenRefreshTimer(); // Restart timer with new token
+            } else {
+                clearTokens();
+                window.location.href = '/login'; // Redirect to login if refresh fails
+            }
+        }, expirationTime);
+    } else {
+        clearTokens();
+        window.location.href = '/login'; // Redirect to login if token is already expired
+    }
 };

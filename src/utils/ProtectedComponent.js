@@ -1,17 +1,19 @@
 // src/components/ProtectedRoute.js
-import React from 'react';
-import { getAccessToken, isAccessTokenExpired } from '../utils/auth';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+
 
 const ProtectedComponent = ({ children }) => {
-    const token = getAccessToken();
-
-    if (!token || isAccessTokenExpired(token)) {
+    const { isAuthenticated } = useContext(AuthContext);
+    
+    if (!isAuthenticated) {
         // Redirect to login if the token is invalid or expired
-        return <></>;
+        return null;
     }
 
     // Render the protected component
     return children;
+    
 };
 
 export default ProtectedComponent;

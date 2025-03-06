@@ -1,15 +1,19 @@
-// src/components/ProtectedRoute.js
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { getAccessToken, isAccessTokenExpired } from '../utils/auth';
+// src/utils/ProtectedRoute.js
+import React, { useContext } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-    const token = getAccessToken();
+    const { isAuthenticated, loading } = useContext(AuthContext);
+  const location = useLocation();
 
-    if (!token || isAccessTokenExpired(token)) {
-        // Redirect to login if the token is invalid or expired
-        return <Navigate to="/login" />;
-    }
+  if (loading) {
+    return <p>Loading...</p>; // Optional: Replace with a loading spinner
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
     // Render the protected component
     return children;
